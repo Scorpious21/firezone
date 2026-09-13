@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FIRE ZONE — Three.js FPS</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+<div id="loading">
+  <div class="load-title">FIRE ZONE</div>
+  <div class="load-track"><div id="loadBar"></div></div>
+  <div id="loadText">BOOTING…</div>
+</div>
+
+<div id="canvasWrap"></div>
+
+<div id="hud" class="hidden">
+  <div id="crosshair">
+    <div class="ch ch-t"></div><div class="ch ch-b"></div><div class="ch ch-l"></div><div class="ch ch-r"></div>
+    <div id="chDot"></div>
+    <div id="hitmarker">
+      <div style="left:13px;top:0;transform:rotate(45deg)"></div>
+      <div style="left:13px;bottom:0;transform:rotate(-45deg)"></div>
+      <div style="top:13px;left:0;transform:rotate(-45deg)"></div>
+      <div style="top:13px;right:0;transform:rotate(45deg)"></div>
+    </div>
+  </div>
+
+  <div class="hud-top-center">
+    <div id="waveLabel">WAVE 1</div>
+    <div id="enemiesLeft">ENEMIES 0</div>
+  </div>
+  <div class="hud-top-right">
+    <div class="hud-label">SCORE</div>
+    <div id="scoreLabel">0</div>
+    <div id="fpsLabel">60 FPS</div>
+    <div id="netLabel"></div>
+  </div>
+
+  <div id="minimapWrap"><canvas id="minimap" width="264" height="264"></canvas></div>
+
+  <div class="hud-bottom-left">
+    <div class="bar-row">
+      <span class="bar-lbl">HP</span>
+      <div class="bar-track"><div id="hpBar"></div></div>
+      <span id="hpText">100</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-lbl">ARM</span>
+      <div class="bar-track sm"><div id="armorBar"></div></div>
+      <span id="armorText" class="armor-text">0</span>
+    </div>
+  </div>
+
+  <div class="hud-bottom-right">
+    <div id="weaponName">AK-47</div>
+    <div class="ammo-row">
+      <span id="ammoText">30</span>
+      <span id="magText">/ 180</span>
+    </div>
+    <div id="reloadHint"></div>
+  </div>
+
+  <div id="killFeed"></div>
+  <div id="reloadBarWrap" class="hidden"><div id="reloadBar"></div></div>
+  <div id="vignette"></div>
+  <div id="lowhp"></div>
+</div>
+
+<div id="touchUI">
+  <div id="joyBase"><div class="lbl">MOVE</div><div id="joyKnob"></div></div>
+  <div id="lookZone"></div>
+  <div id="weaponStrip"></div>
+  <div class="actBtn fire" id="btnFire">🔥</div>
+  <div class="actBtn" id="btnAim">🎯</div>
+  <div class="actBtn" id="btnJump">↑</div>
+  <div class="actBtn" id="btnReload">↻</div>
+  <div class="actBtn" id="btnCrouch">▽</div>
+</div>
+
+<div id="menu" class="screen">
+  <div class="menu-grid"></div>
+  <div class="menu-card panel pop">
+    <div class="menu-header">
+      <div>
+        <h1 class="brand">FIRE ZONE</h1>
+        <p class="brand-sub">9 WEAPONS · 6 SKINS · CO-OP MULTIPLAYER</p>
+      </div>
+      <div class="menu-score">
+        <div class="hud-label">TOTAL SCORE</div>
+        <div id="menuScore">0</div>
+      </div>
+    </div>
+
+    <div class="mode-grid">
+      <button id="btnSingle" class="btn mode-btn primary col-2">
+        <div class="mode-title">▶ SINGLEPLAYER</div>
+        <div class="mode-sub">Survive endless waves</div>
+      </button>
+      <button id="btnHost" class="btn mode-btn host">
+        <div class="mode-title">🌐 HOST CO-OP</div>
+        <div class="mode-sub">Create room</div>
+      </button>
+      <button id="btnJoin" class="btn mode-btn join">
+        <div class="mode-title">🔗 JOIN ROOM</div>
+        <div class="mode-sub">Enter code</div>
+      </button>
+    </div>
+
+    <div class="pick-grid">
+      <div class="panel pick-card">
+        <div class="pick-title">STARTING WEAPON</div>
+        <div id="weaponPicker" class="pick-list"></div>
+      </div>
+      <div class="panel pick-card">
+        <div class="pick-title">CHARACTER SKIN</div>
+        <div id="skinPicker"></div>
+        <div class="btn-strip">
+          <button id="btnSettings" class="btn mini">⚙ SETTINGS</button>
+          <button id="btnFullscreen" class="btn mini">⛶ FULLSCREEN</button>
+          <button id="btnInstall" class="btn mini">⬇ PWA</button>
+          <button id="btnNotify" class="btn mini">🔔 NOTIFY</button>
+          <button id="btnReset" class="btn mini">↺ RESET</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-foot">
+      <span>Click canvas to lock pointer · WASD move · LMB fire · R reload · 1-9 weapons · E/Q cycle</span>
+      <span id="pwaStatus">PWA: ready</span>
+    </div>
+  </div>
+</div>
+
+<div id="settings" class="screen hidden">
+  <div class="panel settings-card pop">
+    <div class="settings-head">
+      <h2>SETTINGS</h2>
+      <button id="closeSettings" class="btn icon-btn">✕</button>
+    </div>
+    <div class="settings-body">
+      <section>
+        <h3 class="sec-title">CONTROLS</h3>
+        <label class="slider-row"><span>Sensitivity</span><span id="vSens" class="val">1.00</span><input id="sSens" type="range" min="0.1" max="4" step="0.05" value="1"></label>
+        <label class="slider-row"><span>Field of View</span><span id="vFov" class="val">78</span><input id="sFov" type="range" min="60" max="110" step="1" value="78"></label>
+        <label class="slider-row"><span>Touch Look</span><span id="vTouch" class="val">1.20</span><input id="sTouch" type="range" min="0.4" max="3" step="0.05" value="1.2"></label>
+        <label class="check-row"><span>Invert Y</span><input id="sInvert" type="checkbox"></label>
+      </section>
+      <section>
+        <h3 class="sec-title">AUDIO</h3>
+        <label class="slider-row"><span>Master</span><span id="vMaster" class="val">0.70</span><input id="sMaster" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+        <label class="slider-row"><span>SFX</span><span id="vSfx" class="val">0.90</span><input id="sSfx" type="range" min="0" max="1" step="0.01" value="0.9"></label>
+      </section>
+      <section>
+        <h3 class="sec-title">GRAPHICS</h3>
+        <label class="check-row"><span>Shadows</span><input id="sShadows" type="checkbox" checked></label>
+        <label class="check-row"><span>Show FPS</span><input id="sFps" type="checkbox" checked></label>
+        <label class="check-row"><span>Show Minimap</span><input id="sMinimap" type="checkbox" checked></label>
+        <label class="slider-row"><span>Render Scale</span><span id="vScale" class="val">1.00</span><input id="sScale" type="range" min="0.5" max="1.5" step="0.05" value="1"></label>
+        <label class="slider-row"><span>Crosshair Color</span><input id="sChColor" type="color" value="#00ff9d" class="color-inp"></label>
+      </section>
+      <section>
+        <h3 class="sec-title">DEVICE</h3>
+        <label class="check-row"><span>Vibration</span><input id="sVibe" type="checkbox" checked></label>
+        <label class="check-row"><span>Notifications</span><input id="sNotif" type="checkbox"></label>
+      </section>
+      <button id="saveSettings" class="btn save-btn">SAVE & CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="panel pause-card pop">
+    <h2>PAUSED</h2>
+    <button id="btnResume" class="btn primary-btn">RESUME</button>
+    <button id="btnPauseSettings" class="btn ghost-btn">SETTINGS</button>
+    <button id="btnQuit" class="btn danger-btn">QUIT</button>
+  </div>
+</div>
+
+<div id="gameover" class="screen hidden">
+  <div class="panel go-card pop">
+    <div class="go-emoji">💀</div>
+    <h2>ELIMINATED</h2>
+    <p id="goSub">YOU SURVIVED 0 WAVES</p>
+    <div class="go-stats">
+      <div class="go-stat"><div class="stat-lbl">SCORE</div><div id="goScore" class="stat-val gold">0</div></div>
+      <div class="go-stat"><div class="stat-lbl">KILLS</div><div id="goKills" class="stat-val orange">0</div></div>
+      <div class="go-stat"><div class="stat-lbl">WAVE</div><div id="goWave" class="stat-val sky">0</div></div>
+    </div>
+    <button id="btnRetry" class="btn primary-btn">PLAY AGAIN</button>
+    <button id="btnMenu2" class="btn ghost-btn">MAIN MENU</button>
+  </div>
+</div>
+
+<div id="modal" class="screen hidden">
+  <div class="panel modal-card pop">
+    <h3 id="modalTitle">ROOM</h3>
+    <p id="modalText"></p>
+    <input id="modalInput" maxlength="6" placeholder="ABC123" autocomplete="off">
+    <div class="modal-btns">
+      <button id="modalCancel" class="btn ghost-btn">CANCEL</button>
+      <button id="modalOk" class="btn primary-btn">OK</button>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "FIRE ZONE — Three.js FPS",
+  "short_name": "FIRE ZONE",
+  "description": "Browser FPS with AI bots and co-op multiplayer.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#05070a",
+  "theme_color": "#ff5722",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjY0IiBmaWxsPSIjZmY1NzIyIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxNzAiIGZpbGw9IiMwYjBmMTQiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjEwMCIgZmlsbD0iI2ZmZDU0ZiIvPjxyZWN0IHg9IjE2MCIgeT0iMjU2IiB3aWR0aD0iMTkyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMGIwZjE0Ii8+PC9zdmc+", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

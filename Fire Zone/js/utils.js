@@ -1,0 +1,10 @@
+export const $  = s => document.querySelector(s);
+export const $$ = s => [...document.querySelectorAll(s)];
+export const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+export const rand  = (a,b) => a + Math.random()*(b-a);
+export const randi = (a,b) => Math.floor(rand(a,b+1));
+export const lerp  = (a,b,t) => a + (b-a)*t;
+export const TAU = Math.PI*2;
+export const nowMs = () => performance.now();
+export const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if(IS_TOUCH) document.body.classList.add('touch');
