@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FIRE ZONE</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/hud.css">
+<link rel="stylesheet" href="css/menu.css">
+<script>
+(function(){
+  var t = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || matchMedia('(pointer:coarse)').matches;
+  if(t) document.documentElement.classList.add('touch');
+  function setOrient(){
+    var land = window.matchMedia('(orientation: landscape)').matches;
+    document.documentElement.classList.toggle('landscape', land);
+    document.documentElement.classList.toggle('portrait', !land);
+  }
+  setOrient();
+  window.addEventListener('orientationchange', function(){ setTimeout(setOrient, 250); });
+  window.addEventListener('resize', setOrient);
+})();
+</script>
+</head>
+<body>
+
+<div id="errorBar" class="error-bar hidden"></div>
+
+<div id="loading">
+  <div class="load-title">FIRE ZONE</div>
+  <div class="load-track"><div id="loadBar"></div></div>
+  <div id="loadText">BOOTING…</div>
+</div>
+
+<div id="canvasWrap"></div>
+
+<div id="glLost" class="gl-lost hidden">
+  <div>RENDERING PAUSED</div>
+  <div style="font-size:.6em;opacity:.7;margin-top:8px">Tap to resume</div>
+</div>
+
+<div id="hud" class="hidden">
+  <div id="crosshair">
+    <div class="ch ch-t"></div><div class="ch ch-b"></div>
+    <div class="ch ch-l"></div><div class="ch ch-r"></div>
+    <div id="chDot"></div>
+    <div id="hitmarker">
+      <div style="left:13px;top:0;transform:rotate(45deg)"></div>
+      <div style="left:13px;bottom:0;transform:rotate(-45deg)"></div>
+      <div style="top:13px;left:0;transform:rotate(-45deg)"></div>
+      <div style="top:13px;right:0;transform:rotate(45deg)"></div>
+    </div>
+  </div>
+  <div id="hudTopCenter">
+    <div id="waveLabel">WAVE 1</div>
+    <div id="enemiesLeft">ENEMIES 0</div>
+  </div>
+  <div id="hudTopRight">
+    <div class="hud-label">SCORE</div>
+    <div id="scoreLabel">0</div>
+    <div id="fpsLabel">60 FPS</div>
+  </div>
+  <div id="hudWalletMini">
+    <span id="hudSparks">⚡ 0</span>
+    <span id="hudEmbers">🔥 0</span>
+  </div>
+  <div id="minimapWrap"><canvas id="minimap" width="264" height="264"></canvas></div>
+  <div id="hudBottomCenter">
+    <div class="bc-bar"><div id="hpBar"></div><span id="hpText">100</span></div>
+    <div class="bc-bar sm"><div id="armorBar"></div><span id="armorText">0</span></div>
+  </div>
+  <div id="hudBottomRight">
+    <div id="weaponName">AK-47</div>
+    <div class="ammo-row">
+      <span id="ammoText">30</span>
+      <span id="magText">/ 180</span>
+    </div>
+    <div id="reloadHint"></div>
+  </div>
+  <div id="killFeed"></div>
+  <div id="reloadBarWrap" class="hidden"><div id="reloadBar"></div></div>
+  <div id="vignette"></div>
+  <div id="lowhp"></div>
+</div>
+
+<div id="touchUI" class="hidden">
+  <div id="lookZone"></div>
+  <div id="joyBase"><div class="lbl">MOVE</div><div id="joyKnob"></div></div>
+  <div id="btnFire" class="actBtn fire">🔥</div>
+  <div id="btnJump" class="actBtn jump">↑</div>
+  <div id="btnReload" class="actBtn reload">↻</div>
+  <div id="btnCrouch" class="actBtn crouch">▽</div>
+  <div id="btnGrenade" class="actBtn grenade">💣</div>
+  <div id="btnAbility" class="actBtn ability"><span id="abilityRing"></span>✦</div>
+</div>
+
+<div id="hub" class="screen">
+  <div class="hub-card panel pop">
+    <div class="hub-header">
+      <div>
+        <h1 class="brand">FIRE ZONE</h1>
+        <p class="brand-sub">PHASE 1</p>
+      </div>
+      <div class="hub-wallet">
+        <span id="hubSparks">⚡ 0</span>
+        <span id="hubEmbers">🔥 0</span>
+      </div>
+    </div>
+    <div class="hub-body">
+      <div class="hub-left">
+        <button id="btnSingle" class="btn mode-btn primary">
+          <div class="mode-title">▶ SINGLE PLAYER</div>
+          <div class="mode-sub">Survive endless waves</div>
+        </button>
+        <button id="btnBackpack" class="btn hub-btn">
+          <div class="mode-title">🎒 BACKPACK</div>
+          <div class="mode-sub">Your gear & inventory</div>
+        </button>
+        <button id="btnShop" class="btn hub-btn shop">
+          <div class="mode-title">🛒 SHOP</div>
+          <div class="mode-sub">Buy weapons & skins</div>
+        </button>
+        <button id="btnProfile" class="btn hub-btn">
+          <div class="mode-title">👤 PROFILE</div>
+          <div class="mode-sub">Callsign, wallet, stats</div>
+        </button>
+      </div>
+      <div class="hub-center">
+        <div class="panel hub-chat-placeholder">
+          <div class="placeholder-title">💬 LOBBY CHAT</div>
+          <div class="placeholder-sub">Coming in Phase 2</div>
+        </div>
+      </div>
+      <div class="hub-right">
+        <div class="panel hub-side"><div class="placeholder-title">👥 FRIENDS</div><div class="placeholder-sub">Phase 2</div></div>
+        <div class="panel hub-side"><div class="placeholder-title">🎁 GIFTS</div><div class="placeholder-sub">Phase 2</div></div>
+        <div class="panel hub-side"><div class="placeholder-title">🏆 LEADERBOARD</div><div class="placeholder-sub">Phase 2</div></div>
+      </div>
+    </div>
+    <div class="hub-foot">
+      <button id="btnSettings" class="btn mini">⚙ SETTINGS</button>
+      <button id="btnFullscreen" class="btn mini">⛶ FULLSCREEN</button>
+      <button id="btnInstall" class="btn mini">⬇ PWA</button>
+      <button id="btnNotify" class="btn mini">🔔 NOTIFY</button>
+      <button id="btnVibrate" class="btn mini">📳 VIBRATE</button>
+      <button id="btnLandscape" class="btn mini">↻ LANDSCAPE</button>
+      <button id="btnReset" class="btn mini danger">↺ RESET</button>
+      <span id="pwaStatus"></span>
+    </div>
+  </div>
+</div>
+
+<div id="settings" class="screen hidden">
+  <div class="panel settings-card pop">
+    <div class="settings-head">
+      <h2>SETTINGS</h2>
+      <button id="closeSettings" class="btn icon-btn">✕</button>
+    </div>
+    <div class="settings-body">
+      <section>
+        <h3 class="sec-title">CONTROLS</h3>
+        <label class="slider-row"><span>Sensitivity</span><span id="vSens" class="val">1.00</span><input id="sSens" type="range" min="0.1" max="4" step="0.05" value="1"></label>
+        <label class="slider-row"><span>Field of View</span><span id="vFov" class="val">78</span><input id="sFov" type="range" min="60" max="110" step="1" value="78"></label>
+        <label class="slider-row"><span>Touch Look</span><span id="vTouch" class="val">1.20</span><input id="sTouch" type="range" min="0.4" max="3" step="0.05" value="1.2"></label>
+        <label class="check-row"><span>Invert Y</span><input id="sInvert" type="checkbox"></label>
+        <label class="check-row"><span>Left-handed</span><input id="sLefty" type="checkbox"></label>
+      </section>
+      <section>
+        <h3 class="sec-title">AUDIO</h3>
+        <label class="slider-row"><span>Master</span><span id="vMaster" class="val">0.70</span><input id="sMaster" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+        <label class="slider-row"><span>SFX</span><span id="vSfx" class="val">0.90</span><input id="sSfx" type="range" min="0" max="1" step="0.01" value="0.9"></label>
+      </section>
+      <section>
+        <h3 class="sec-title">GRAPHICS</h3>
+        <label class="check-row"><span>Shadows</span><input id="sShadows" type="checkbox" checked></label>
+        <label class="check-row"><span>Show FPS</span><input id="sFps" type="checkbox" checked></label>
+        <label class="check-row"><span>Show Minimap</span><input id="sMinimap" type="checkbox" checked></label>
+        <label class="slider-row"><span>Render Scale</span><span id="vScale" class="val">1.00</span><input id="sScale" type="range" min="0.5" max="1.5" step="0.05" value="1"></label>
+        <label class="slider-row"><span>Crosshair</span><input id="sChColor" type="color" value="#00ff9d" class="color-inp"></label>
+      </section>
+      <section>
+        <h3 class="sec-title">DEVICE</h3>
+        <label class="check-row"><span>Vibration</span><input id="sVibe" type="checkbox" checked></label>
+        <label class="check-row"><span>Notifications</span><input id="sNotif" type="checkbox"></label>
+      </section>
+      <button id="saveSettings" class="btn save-btn">SAVE & CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="panel pause-card pop">
+    <h2>PAUSED</h2>
+    <button id="btnResume" class="btn primary-btn">RESUME</button>
+    <button id="btnQuit" class="btn danger-btn">QUIT</button>
+  </div>
+</div>
+
+<div id="gameover" class="screen hidden">
+  <div class="panel go-card pop">
+    <div class="go-emoji">💀</div>
+    <h2>ELIMINATED</h2>
+    <p id="goSub"></p>
+    <div class="go-stats">
+      <div class="go-stat"><div class="stat-lbl">SCORE</div><div id="goScore" class="stat-val gold">0</div></div>
+      <div class="go-stat"><div class="stat-lbl">KILLS</div><div id="goKills" class="stat-val orange">0</div></div>
+      <div class="go-stat"><div class="stat-lbl">WAVE</div><div id="goWave" class="stat-val sky">0</div></div>
+    </div>
+    <div id="goEarned" class="go-earned"></div>
+    <button id="btnRetry" class="btn primary-btn">PLAY AGAIN</button>
+    <button id="btnMenu2" class="btn ghost-btn">HUB</button>
+  </div>
+</div>
+
+<div id="usernameModal" class="screen hidden">
+  <div class="panel modal-card pop">
+    <h3>CHOOSE YOUR CALLSIGN</h3>
+    <p class="modal-sub">3–16 characters. Letters, numbers, underscore.</p>
+    <input id="usernameInput" maxlength="16" placeholder="Soldier_42" autocomplete="off">
+    <div id="usernameError" class="modal-error"></div>
+    <button id="usernameConfirm" class="btn primary-btn">CONTINUE</button>
+  </div>
+</div>
+
+<div id="recoveryModal" class="screen hidden">
+  <div class="panel modal-card pop">
+    <h3>SAVE YOUR RECOVERY CODE</h3>
+    <p class="modal-sub">Only way to log in on another device. Save it somewhere safe.</p>
+    <div id="recoveryCode" class="recovery-code">FZ-XXXX-XXXX-XXXX-XXXX</div>
+    <button id="copyRecovery" class="btn ghost-btn">📋 COPY</button>
+    <button id="recoveryConfirm" class="btn primary-btn">I'VE SAVED IT</button>
+  </div>
+</div>
+
+<div id="backpack" class="screen hidden">
+  <div class="panel pack-card pop">
+    <div class="pack-head">
+      <h2>BACKPACK</h2>
+      <button id="closeBackpack" class="btn icon-btn">✕</button>
+    </div>
+    <div class="pack-tabs">
+      <button class="tabbtn active" data-tab="weapons">WEAPONS</button>
+      <button class="tabbtn" data-tab="skins">SKINS</button>
+      <button class="tabbtn" data-tab="grenades">GRENADES</button>
+      <button class="tabbtn" data-tab="ores">ORES</button>
+      <button class="tabbtn" data-tab="gifts">GIFTS</button>
+    </div>
+    <div id="packGrid" class="pack-grid"></div>
+  </div>
+</div>
+
+<div id="shop" class="screen hidden">
+  <div class="panel shop-card pop">
+    <div class="shop-head">
+      <h2>SHOP</h2>
+      <div class="shop-wallet"><span id="shopSparks">⚡ 0</span><span id="shopEmbers">🔥 0</span></div>
+      <button id="closeShop" class="btn icon-btn">✕</button>
+    </div>
+    <div class="shop-tabs">
+      <button class="tabbtn active" data-tab="weapons">WEAPONS</button>
+      <button class="tabbtn" data-tab="skins">SKINS</button>
+      <button class="tabbtn" data-tab="grenades">GRENADES</button>
+      <button class="tabbtn" data-tab="ores">ORES</button>
+    </div>
+    <div class="shop-body">
+      <div id="shopGrid" class="shop-grid"></div>
+      <div id="shopDetails" class="shop-details">
+        <div class="placeholder-title">Select an item</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="profile" class="screen hidden">
+  <div class="panel profile-card pop">
+    <div class="pack-head">
+      <h2>PROFILE</h2>
+      <button id="closeProfile" class="btn icon-btn">✕</button>
+    </div>
+    <div class="profile-body">
+      <div class="profile-row"><span>CALLSIGN</span><b id="profName">—</b></div>
+      <div class="profile-row"><span>PEER ID</span><b id="profPeerId" class="mono">—</b></div>
+      <div class="profile-row"><span>SPARKS</span><b id="profSparks">⚡ 0</b></div>
+      <div class="profile-row"><span>EMBERS</span><b id="profEmbers">🔥 0</b></div>
+      <div class="profile-row"><span>CREATED</span><b id="profCreated">—</b></div>
+      <button id="viewRecovery" class="btn ghost-btn">🔐 VIEW RECOVERY CODE</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="portraitHint">↻ ROTATE FOR BEST EXPERIENCE</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
